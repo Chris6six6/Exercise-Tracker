@@ -94,7 +94,7 @@ const logs = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const ejercicios = await User.find(); // Encuentra todos los ejercicios
+        const ejercicios = await Exercise.find({ user_id: _id }); // Encuentra todos los ejercicios
         if (!ejercicios) {
         return res.status(404).json({ error: 'No se encontraron ejercicios' });
         }
