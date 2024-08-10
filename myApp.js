@@ -23,18 +23,6 @@ const exerciseSchema = new mongoose.Schema({
 });
 const Exercise = mongoose.model('Exercise', exerciseSchema);
 
-// Modelo Log
-const logSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  count: { type: Number, required: true },
-  _id: { type: String, required: true },
-  log: [{
-    description: { type: String, required: true },
-    duration: { type: Number, required: true },
-    date: { type: String, required: true },
-  }]
-});
-const Log = mongoose.model('Log', logSchema);
 
 // Controladores
 
@@ -97,10 +85,37 @@ const agregarEjercicio = async (req, res) => {
   }
 };
 
+const logs = async (req, res) => {
+    const { _id } = req.params;
+    try {
+        // Verificar si el usuario existe
+        const user = await User.findById(_id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
+        const ejercicios = await User.find(); // Encuentra todos los ejercicios
+        if (!ejercicios) {
+        return res.status(404).json({ error: 'No se encontraron ejercicios' });
+        }
+
+        // Responder con los datos del ejercicio creado
+        res.json({
+        _id: user._id,
+        username: user.username,
+        count : ejercicios.length,
+        log: ejercicios
+        });
+
+    } catch (error) {
+        console.error('Error al agregar ejercicio:', error); // Depuración
+        res.status(500).json({ error: 'Error al agregar ejercicio' });
+    }
+}
 
 module.exports = {
   crearUsuario,
   mostrarUsuarios,
-  agregarEjercicio
+  agregarEjercicio,
+  logs
 };

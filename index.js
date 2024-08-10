@@ -23,6 +23,9 @@ app.post('/api/users', myApp.crearUsuario);
 // Agregar ejercicios
 app.post('/api/users/:_id/exercises', myApp.agregarEjercicio);
 
+// Buscar logs
+app.get('/api/users/:_id/logs', myApp.logs);
+
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
