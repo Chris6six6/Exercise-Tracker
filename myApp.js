@@ -86,32 +86,45 @@ const agregarEjercicio = async (req, res) => {
 };
 
 const logs = async (req, res) => {
+    const { from, to, limit } = req.query;
     const { _id } = req.params;
-    try {
-        // Verificar si el usuario existe
-        const user = await User.findById(_id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
 
-        const ejercicios = await Exercise.find({ user_id: _id }); // Encuentra todos los ejercicios
-        if (!ejercicios) {
+    // Verificar si el usuario existe
+    const user = await User.findById(_id);
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Inicializar objeto de filtro para fechas
+    let dateObj = {};
+    if (from) dateObj["$gte"] = new Date(from);
+    if (to) dateObj["$lte"] = new Date(to);
+
+    // Crear filtro para la búsqueda
+    let filter = { user_id: _id };
+    if (from || to) {
+        filter.date = dateObj;
+    }
+
+    // Buscar ejercicios con los filtros aplicados y limitar el número de resultados
+    const ejercicios = await Exercise.find(filter).limit(+limit || 50);
+    if (!ejercicios || ejercicios.length === 0) {
         return res.status(404).json({ error: 'No se encontraron ejercicios' });
-        }
+    }
 
-        // Responder con los datos del ejercicio creado
-        res.json({
+    // Responder con los datos del log de ejercicios
+    res.json({
         _id: user._id,
         username: user.username,
-        count : ejercicios.length,
-        log: ejercicios
-        });
+        count: ejercicios.length,
+        log: ejercicios.map(ejercicio => ({
+            description: ejercicio.description,
+            duration: ejercicio.duration,
+            date: ejercicio.date.toDateString()
+        }))
+    });
+};
 
-    } catch (error) {
-        console.error('Error al agregar ejercicio:', error); // Depuración
-        res.status(500).json({ error: 'Error al agregar ejercicio' });
-    }
-}
 
 module.exports = {
   crearUsuario,
